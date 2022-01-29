@@ -1,0 +1,16 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\public",
+    "\\public\\css",
+    "\\public\\js",
+    "\\resources",
+    "\\resources\\css",
+    "\\resources\\js",
+    "\\resources\\views",
+    "\\resources\\views\\auth",
+    "\\resources\\views\\layouts"
+  ],
+  "SelectedNode": "\\resources\\views\\layouts\\navigation.blade.php",
+  "PreviewInSolutionExplorer": false
+}
