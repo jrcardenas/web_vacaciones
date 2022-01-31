@@ -63,26 +63,34 @@ class FullCalenderController extends Controller
 				return response()->json($event);
 			}
 
-			if ($request->type == 'delete') {
+			if ($request->type == 'aprobar') {
 
 				$id =  Auth::user()->id;
 				$idJefe =  Auth::user()->idJefeEquipo;
-							$idEvento = Event::find($request->id);
-				$color = 'red';
-				$vacaciones = 'vacas';
+				$idEvento = Event::find($request->id);
+				$vacaciones = Event::find($request->tipoEvento);
+				$idJefe =  Auth::user()->idJefeEquipo;
 
+			
 				if ($id == $idJefe) {
 
 					$event = Event::find($request->id)->update([
-						'color' => $color
+						'color' => $request->color
 
 					]);
-				} else {
-					$event = Event::find($request->id)->delete();
 				}
 
 				return response()->json($event);
 			}
+			if ($request->type == 'delete') {
+				$event = Event::find($request->id)->update([
+					'color' => $request->color
+				]);
+
+				$event = Event::find($request->id)->delete();
+				
+			
+		}
 		}
 	}
 }

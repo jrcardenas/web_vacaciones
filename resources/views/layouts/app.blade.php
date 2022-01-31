@@ -45,6 +45,7 @@
       <h1 class="text-center text-primary"><u>Calendario</u></h1>
       
       <input type="hidden" id="idEmpleado" name="idEmpleado" value="{{ Auth::user()->id }}">
+      <input type="hidden" id="nombreEmpleado" name="nombreEmpleado" value="{{ Auth::user()->id }}">
       <input type="hidden" id="idJefeEquipo" name="idJefeEquipo" value="{{ Auth::user()->idJefeEquipo }}">
       <input type="hidden" id="name" name="name" value="{{ Auth::user()->name }}">
 

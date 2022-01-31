@@ -5,25 +5,19 @@
 
         </h2>
     </x-slot>
-    <style>
-    .vacas {
-        background-color: green;
 
-    }
-    </style>
 
     <script>
     $(document).ready(function() {
-        Swal.fire({
-            position: 'top-end',
-            icon: 'success',
-            title: 'Login OK. Bienvenido {{ Auth::user()->name }}',
-            showConfirmButton: false,
-            timer: 2000
-        })
+
+
+
+
         var eventos = [];
         var idEmpleado = $('#idEmpleado').val();
         var idJefeEquipo = $('#idJefeEquipo').val();
+        var nombre = $('#name').val();
+
         var $calendar = $("#calendar");
 
 
@@ -94,7 +88,7 @@
             header: {
                 left: 'prev,next today',
                 center: 'title',
-                right: 'agendaDay,agendaWeek,month'
+                right: 'agendaDay,agendaWeek,month,listYear'
             },
             //quitar la hora a la vista de los eventos
             displayEventTime: false,
@@ -102,6 +96,7 @@
 
             dayClick: function(date, jsEvent, view) {
                 var tipoEvento = document.getElementsByName("evento");
+
                 //generamos un bucle para poder seleccionar el check marcado
                 for (i = 0; i < tipoEvento.length; i++) {
                     if (tipoEvento[i].checked) {
@@ -113,7 +108,7 @@
                 var end = date.format();
                 var color;
                 //alert('Clicked on: ' + date.format());
-                var title = prompt('Titulo del evento:');
+
                 if (tipoEvento == "vacas") {
                     color = "#999999"
                 } else if (tipoEvento == "cumple") {
@@ -124,13 +119,14 @@
                     color = "#ffdfba"
 
                 }
-                if (title) {
+                if (tipoEvento == 'vacas') {
+
                     $.ajax({
 
                         url: "/full-calender/action",
                         type: "POST",
                         data: {
-                            title: title,
+                            title: 'Vacas '+ nombre,
                             start: start,
                             end: end,
                             idEmpleado: idEmpleado,
@@ -141,15 +137,75 @@
                         },
                         success: function(data) {
                             calendar.fullCalendar('refetchEvents');
-                            alert("Event Created Successfully");
+                            Swal.fire({
+                                position: 'top-end',
+                                icon: 'success',
+                                title: 'Vacaciones solicitadas',
+                                showConfirmButton: false,
+                                timer: 1500
+                            })
                         },
 
                         error: function(data) {
                             alert('mal');
                         }
                     })
-                }
+                } else {
 
+                
+                Swal.fire({
+                    title: 'Titulo del evento',
+                    position: 'top-end',
+
+                    html: `<input type="text" id="login" class="swal2-input" placeholder="Título">`,
+                    confirmButtonText: 'Crear',
+                    showCancelButton: true,
+                    cancelButtonText: 'Cancelar',
+                    preConfirm: () => {
+                        var title = Swal.getPopup().querySelector('#login').value
+
+                        return {
+                            title: title
+                        }
+                    }
+                }).then((result) => {
+
+
+
+                    if (result.value.title) {
+                        $.ajax({
+
+                            url: "/full-calender/action",
+                            type: "POST",
+                            data: {
+                                title: result.value.title,
+                                start: start,
+                                end: end,
+                                idEmpleado: idEmpleado,
+                                idJefeEquipo: idJefeEquipo,
+                                tipoEvento: tipoEvento,
+                                color: color,
+                                type: 'add',
+                            },
+                            success: function(data) {
+                                calendar.fullCalendar('refetchEvents');
+                                Swal.fire({
+                                    position: 'top-end',
+                                    icon: 'success',
+                                    title: 'Evento creado',
+                                    showConfirmButton: false,
+                                    timer: 1500
+                                })
+                            },
+
+                            error: function(data) {
+                                alert('mal');
+                            }
+                        })
+                    }
+                
+                });
+                }
                 //Formato de colores del calendario
 
                 //alert('Coordinates: ' + jsEvent.pageX + ',' + jsEvent.pageY);
@@ -158,8 +214,9 @@
 
                 // change the day's background color just for fun
                 //$(this).css('background-color', 'red');
-
+            
             },
+            
             events: '/full-calender',
             selectable: true,
             selectHelper: true,
@@ -187,7 +244,13 @@
                     },
                     success: function(response) {
                         calendar.fullCalendar('refetchEvents');
-                        alert("Event Updated Successfully");
+                        Swal.fire({
+                            position: 'top-end',
+                            icon: 'success',
+                            title: 'Evento actualizado',
+                            showConfirmButton: false,
+                            timer: 1500
+                        })
                     }
                 })
             },
@@ -216,28 +279,149 @@
                     },
                     success: function(response) {
                         calendar.fullCalendar('refetchEvents');
-                        alert("Event Updated Successfully");
+                        Swal.fire({
+                            position: 'top-end',
+                            icon: 'success',
+                            title: 'Evento actualizado',
+                            showConfirmButton: false,
+                            timer: 1500
+                        })
                     }
                 })
             },
 
             //eliminar eventos
 
+
             eventClick: function(data) {
-                if (confirm("Are you sure you want to remove it?")) {
-                    var id = data.id;
-                    $.ajax({
-                        url: "/full-calender/action",
-                        type: "POST",
-                        data: {
-                            id: id,
-                            type: "delete"
-                        },
-                        success: function(response) {
-                            calendar.fullCalendar('refetchEvents');
-                            alert("Event Deleted Successfully");
+                var id = data.id;
+                var color = data.color;
+
+
+                if (idJefeEquipo == idEmpleado && color == '#999999') {
+                    Swal.fire({
+
+                        position: 'top-end',
+
+                        title: '¿Que quieres hacer con las vacaciones?',
+                        showDenyButton: true,
+                        showCancelButton: true,
+                        cancelButtonText: 'Aplazar',
+                        confirmButtonText: 'Aprobar',
+                        denyButtonText: `Denegar`,
+                    }).then((result) => {
+                        /* Read more about isConfirmed, isDenied below */
+                        if (result.isConfirmed) {
+                            Swal.fire({
+                                position: 'top-end',
+                                icon: 'success',
+                                title: 'Aprobadas',
+                                showConfirmButton: false,
+                                timer: 1500
+                            })
+                            color = '#1b7340';
+                            $.ajax({
+                                url: "/full-calender/action",
+                                type: "POST",
+                                data: {
+                                    id: id,
+                                    type: "aprobar",
+                                    color: color
+                                },
+                                success: function(response) {
+                                    calendar.fullCalendar('refetchEvents');
+                                }
+                            })
+                        } else if (result.isDenied) {
+                            Swal.fire({
+                                position: 'top-end',
+                                icon: 'error',
+                                title: 'Denegadas',
+                                showConfirmButton: false,
+                                timer: 1500
+                            })
+                            color = '#ea2a18';
+                            $.ajax({
+                                url: "/full-calender/action",
+                                type: "POST",
+                                data: {
+                                    id: id,
+                                    type: "aprobar",
+                                    color: color
+                                },
+                                success: function(response) {
+                                    calendar.fullCalendar('refetchEvents');
+                                }
+                            })
+                        } else if (result.dismiss) {
+                            Swal.fire({
+                                position: 'top-end',
+                                icon: 'info',
+                                title: 'Aplazadas',
+                                showConfirmButton: false,
+                                timer: 1500
+                            })
+                            $.ajax({
+                                url: "/full-calender/action",
+                                type: "POST",
+                                data: {
+                                    id: id,
+                                    type: "aprobar",
+                                    color: color
+                                },
+                                success: function(response) {
+                                    calendar.fullCalendar('refetchEvents');
+                                }
+                            })
                         }
                     })
+
+                } else {
+                    var id = data.id;
+                    var color = data.color;
+
+                    if (idJefeEquipo == idEmpleado && color == '#1b7340' || color == '#ea2a18') {
+
+
+                        Swal.fire({
+                            icon: 'error',
+                            position: 'top-end',
+                            timer: 1500,
+                            title: 'No puedes eliminar este evento',
+                            showConfirmButton: false
+
+                        })
+                    } else {
+
+                        Swal.fire({
+
+                            position: 'top-end',
+
+                            title: '¿Quieres eliminar el evento?',
+                            showCancelButton: true,
+                            confirmButtonText: 'Eliminar',
+                        }).then((result) => {
+                            /* Read more about isConfirmed, isDenied below */
+                            if (result.isConfirmed) {
+                                var id = data.id;
+                                var color = data.color;
+                                $.ajax({
+                                    url: "/full-calender/action",
+                                    type: "POST",
+                                    data: {
+                                        id: id,
+                                        color: color,
+                                        type: "delete"
+
+                                    },
+                                    success: function(response) {
+                                        calendar.fullCalendar('refetchEvents');
+                                    }
+                                })
+                            }
+
+                        })
+                    }
                 }
             }
 
